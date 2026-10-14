@@ -1,0 +1,46 @@
+import { Module } from '@nestjs/common';
+import { MongooseModule } from '@nestjs/mongoose';
+import { DailyLedgerService } from './daily-ledger.service';
+import { DailyLedgerController } from './daily-ledger.controller';
+import { Invoice, InvoiceSchema } from '../sales/schemas/invoice.schema';
+import {
+  ScrapInvoice,
+  ScrapInvoiceSchema,
+} from '../scrap-invoices/schemas/scrap-invoice.schema';
+import { Income, IncomeSchema } from '../income/schemas/income.schema';
+import { Expense, ExpenseSchema } from '../expenses/schemas/expense.schema';
+import {
+  BullionSale,
+  BullionSaleSchema,
+} from '../bullion-sales/schemas/bullion-sale.schema';
+import {
+  BarcodeInvoice,
+  BarcodeInvoiceSchema,
+} from '../barcode-sales/schemas/barcode-invoice.schema';
+import {
+  ScrapPurchase,
+  ScrapPurchaseSchema,
+} from '../scrap-purchases/schemas/scrap-purchases.schema';
+import {
+  SupplierTransaction,
+  SupplierTransactionSchema,
+} from '../suppliers/schemas/supplier-transaction.schema';
+
+@Module({
+  imports: [
+    MongooseModule.forFeature([
+      { name: Invoice.name, schema: InvoiceSchema },
+      { name: ScrapInvoice.name, schema: ScrapInvoiceSchema },
+      { name: Income.name, schema: IncomeSchema },
+      { name: Expense.name, schema: ExpenseSchema },
+      { name: BullionSale.name, schema: BullionSaleSchema },
+      { name: BarcodeInvoice.name, schema: BarcodeInvoiceSchema },
+      { name: ScrapPurchase.name, schema: ScrapPurchaseSchema },
+      { name: SupplierTransaction.name, schema: SupplierTransactionSchema },
+    ]),
+  ],
+  controllers: [DailyLedgerController],
+  providers: [DailyLedgerService],
+  exports: [DailyLedgerService],
+})
+export class DailyLedgerModule {}
