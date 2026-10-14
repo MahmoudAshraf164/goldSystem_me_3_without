@@ -18,6 +18,7 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '../../common/enums/role.enum';
 
+
 @ApiTags('Scrap Gold Management (ذهب الكسر - كسر الخزنة)')
 @ApiBearerAuth('access-token')
 @UseGuards(AuthGuard, RolesGuard)
@@ -75,3 +76,5 @@ export class ScrapGoldController {
     };
   }
 }
+
+
