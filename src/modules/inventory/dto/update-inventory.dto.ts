@@ -3,7 +3,10 @@ import { IsNumber, IsOptional, IsString, Min } from 'class-validator';
 import { CreateInventoryDto } from './create-inventory.dto';
 
 export class UpdateInventoryDto extends PartialType(CreateInventoryDto) {
-  @ApiPropertyOptional({ example: 'خاتم إيجيبت جولد', description: 'عنوان مجموعة المخزون' })
+  @ApiPropertyOptional({
+    example: 'خاتم إيجيبت جولد',
+    description: 'عنوان مجموعة المخزون',
+  })
   @IsOptional()
   @IsString()
   title?: string;
@@ -13,20 +16,38 @@ export class UpdateInventoryDto extends PartialType(CreateInventoryDto) {
   @IsString()
   companyName?: string;
 
-  @ApiPropertyOptional({ example: '6a9f5848a9dc815a6aee102a', description: 'معرف القسم (Category ObjectId)' })
+  @ApiPropertyOptional({
+    example: '6a9f5848a9dc815a6aee102a',
+    description: 'معرف القسم (Category ObjectId)',
+  })
   @IsOptional()
   @IsString()
   category?: string;
 
-  @ApiPropertyOptional({ example: 42, description: 'العدد الأولي المباشر للمجموعة' })
+  @ApiPropertyOptional({
+    example: 42,
+    description: 'العدد الأولي المباشر للمجموعة',
+  })
   @IsOptional()
   @IsNumber()
   @Min(0)
   initialCount?: number;
 
-  @ApiPropertyOptional({ example: 150.5, description: 'الوزن القائم الأولي المباشر للمجموعة' })
+  @ApiPropertyOptional({
+    example: 150.5,
+    description: 'الوزن القائم الأولي المباشر للمجموعة',
+  })
   @IsOptional()
   @IsNumber()
   @Min(0)
   initialGrossWeight?: number;
+
+  @ApiPropertyOptional({
+    example: 148.2,
+    description: 'الوزن الصافي الأولي المباشر للمجموعة',
+  })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  initialNetWeight?: number;
 }

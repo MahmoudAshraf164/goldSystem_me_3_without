@@ -14,10 +14,6 @@ import {
   BullionSaleSchema,
 } from '../bullion-sales/schemas/bullion-sale.schema';
 import {
-  BarcodeInvoice,
-  BarcodeInvoiceSchema,
-} from '../barcode-sales/schemas/barcode-invoice.schema';
-import {
   ScrapPurchase,
   ScrapPurchaseSchema,
 } from '../scrap-purchases/schemas/scrap-purchases.schema';
@@ -34,7 +30,6 @@ import {
       { name: Income.name, schema: IncomeSchema },
       { name: Expense.name, schema: ExpenseSchema },
       { name: BullionSale.name, schema: BullionSaleSchema },
-      { name: BarcodeInvoice.name, schema: BarcodeInvoiceSchema },
       { name: ScrapPurchase.name, schema: ScrapPurchaseSchema },
       { name: SupplierTransaction.name, schema: SupplierTransactionSchema },
     ]),

@@ -6,7 +6,6 @@ import { ScrapInvoice } from '../scrap-invoices/schemas/scrap-invoice.schema';
 import { Income } from '../income/schemas/income.schema';
 import { Expense } from '../expenses/schemas/expense.schema';
 import { BullionSale } from '../bullion-sales/schemas/bullion-sale.schema';
-import { BarcodeInvoice } from '../barcode-sales/schemas/barcode-invoice.schema';
 import { ScrapPurchase } from '../scrap-purchases/schemas/scrap-purchases.schema';
 import { SupplierTransaction } from '../suppliers/schemas/supplier-transaction.schema';
 
@@ -20,8 +19,6 @@ export class DailyLedgerService {
     @InjectModel(Expense.name) private readonly expenseModel: Model<Expense>,
     @InjectModel(BullionSale.name)
     private readonly bullionSaleModel: Model<BullionSale>,
-    @InjectModel(BarcodeInvoice.name)
-    private readonly barcodeInvoiceModel: Model<BarcodeInvoice>,
     @InjectModel(ScrapPurchase.name)
     private readonly scrapPurchaseModel: Model<ScrapPurchase>,
     @InjectModel(SupplierTransaction.name)
@@ -58,7 +55,6 @@ export class DailyLedgerService {
       end,
       'COMPLETED',
     );
-    const barcodeGoldCash = await this.getBarcodeCash(start, end);
     const bullionGoldCash = await this.getCash(
       this.bullionSaleModel,
       start,
@@ -87,12 +83,12 @@ export class DailyLedgerService {
     const totalInflow = parseFloat(
       (
         newGoldCash +
-        barcodeGoldCash +
         bullionGoldCash +
         scrapGoldCash +
         extraIncomes
       ).toFixed(2),
     );
+
     const netCashflow = parseFloat(
       (totalInflow - totalExpensesOutflow).toFixed(2),
     );
@@ -103,7 +99,6 @@ export class DailyLedgerService {
       period: { start, end },
       financials: {
         newGoldSalesCash: newGoldCash,
-        barcodeGoldSalesCash: barcodeGoldCash,
         bullionGoldSalesCash: bullionGoldCash,
         scrapGoldSalesCash: scrapGoldCash,
         extraIncomesCash: extraIncomes,
@@ -132,24 +127,6 @@ export class DailyLedgerService {
       },
     ]);
     return (result[0]?.totalCash || 0) + (result[0]?.totalFees || 0);
-  }
-
-  private async getBarcodeCash(start: Date, end: Date): Promise<number> {
-    const result = await this.barcodeInvoiceModel.aggregate([
-      {
-        $match: {
-          createdAt: { $gte: start, $lte: end },
-          isCancelled: { $ne: true },
-        },
-      },
-      {
-        $group: {
-          _id: null,
-          total: { $sum: '$finalPaidAmount' },
-        },
-      },
-    ]);
-    return result[0]?.total || 0;
   }
 
   private async getCash(
@@ -211,22 +188,6 @@ export class DailyLedgerService {
       },
     ]);
 
-    const barcodeGoldReport = await this.barcodeInvoiceModel.aggregate([
-      {
-        $match: {
-          createdAt: { $gte: start, $lte: end },
-          isCancelled: { $ne: true },
-        },
-      },
-      { $unwind: '$items' },
-      {
-        $group: {
-          _id: '$items.karat',
-          totalWeight: { $sum: '$items.netWeight' },
-        },
-      },
-    ]);
-
     const bullionGoldReport = await this.bullionSaleModel.aggregate([
       {
         $match: { createdAt: { $gte: start, $lte: end }, status: 'COMPLETED' },
@@ -262,24 +223,24 @@ export class DailyLedgerService {
     return {
       newGoldSalesGrams: {
         karat24: parseFloat(
-          (
-            getWeightByKarat(newGoldReport, 24) +
-            getWeightByKarat(barcodeGoldReport, 24) +
-            getWeightByKarat(bullionGoldReport, 24)
-          ).toFixed(3),
+          getWeightByKarat(newGoldReport, 24).toFixed(3),
         ),
         karat21: parseFloat(
-          (
-            getWeightByKarat(newGoldReport, 21) +
-            getWeightByKarat(barcodeGoldReport, 21) +
-            getWeightByKarat(bullionGoldReport, 21)
-          ).toFixed(3),
+          getWeightByKarat(newGoldReport, 21).toFixed(3),
         ),
         karat18: parseFloat(
-          (
-            getWeightByKarat(newGoldReport, 18) +
-            getWeightByKarat(barcodeGoldReport, 18)
-          ).toFixed(3),
+          getWeightByKarat(newGoldReport, 18).toFixed(3),
+        ),
+      },
+      bullionGoldSalesGrams: {
+        karat24: parseFloat(
+          getWeightByKarat(bullionGoldReport, 24).toFixed(3),
+        ),
+        karat21: parseFloat(
+          getWeightByKarat(bullionGoldReport, 21).toFixed(3),
+        ),
+        karat18: parseFloat(
+          getWeightByKarat(bullionGoldReport, 18).toFixed(3),
         ),
       },
       scrapGoldPurchasesGrams: {

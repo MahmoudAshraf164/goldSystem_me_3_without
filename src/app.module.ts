@@ -23,12 +23,9 @@ import { IncomeModule } from './modules/income/income.module';
 import { SafeModule } from './modules/safe/safe.module';
 import { BullionInventoryModule } from './modules/bullion-inventory/bullion-inventory.module';
 import { BullionSalesModule } from './modules/bullion-sales/bullion-sales.module';
-import { BarcodeSalesModule } from './modules/barcode-sales/barcode-sales.module';
-import { BarcodeInventoryModule } from './modules/barcode-inventory/barcode-inventory.module';
-import { MeltingModule } from './modules/melting/melting.module';
 import { ScrapPurchasesModule } from './modules/scrap-purchases/scrap-purchases.module';
 import { SuppliersModule } from './modules/suppliers/suppliers.module';
-import { SilverModule } from './modules/silver/silver.module';
+import { MeltingModule } from './modules/melting/melting.module';
 
 @Module({
   imports: [
@@ -78,14 +75,11 @@ import { SilverModule } from './modules/silver/silver.module';
     NotificationsModule,
     IncomeModule,
     SafeModule,
+    MeltingModule,
     BullionInventoryModule,
     BullionSalesModule,
-    BarcodeInventoryModule,
-    BarcodeSalesModule,
     ScrapPurchasesModule,
-    MeltingModule,
     SuppliersModule,
-    SilverModule,
   ],
   controllers: [AppController],
 })

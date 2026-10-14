@@ -10,7 +10,6 @@ import { CreateCustomerDto } from './dto/create-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
 import { Invoice } from '../sales/schemas/invoice.schema';
 import { BullionSale } from '../bullion-sales/schemas/bullion-sale.schema';
-import { BarcodeInvoice } from '../barcode-sales/schemas/barcode-invoice.schema';
 
 @Injectable()
 export class CustomersService {
@@ -19,11 +18,9 @@ export class CustomersService {
     @InjectModel(Invoice.name) private readonly invoiceModel: Model<Invoice>,
     @InjectModel(BullionSale.name)
     private readonly bullionSaleModel: Model<BullionSale>,
-    @InjectModel(BarcodeInvoice.name)
-    private readonly barcodeInvoiceModel: Model<BarcodeInvoice>,
   ) {}
 
-  // 🟢 1. البحث عن عميل برقم الهاتف (مُحدثة للتوافق مع BarcodeSalesService)
+  // 🟢 1. البحث عن عميل برقم الهاتف
   async findByPhone(phoneNumber: string): Promise<Customer | null> {
     if (!phoneNumber || phoneNumber.trim() === '') return null;
     return this.customerModel
@@ -85,7 +82,7 @@ export class CustomersService {
     return customer;
   }
 
-  // 🟢 5. جلب سجل الفواتير والمشتريات الكامل للعميل (عادية + سبايك + باركود)
+  // 🟢 5. جلب سجل الفواتير والمشتريات الكامل للعميل (عادية + سبايك)
   async getCustomerStatement(customerId: string) {
     const customer = await this.findById(customerId);
 
@@ -101,13 +98,6 @@ export class CustomersService {
     const bullionSales = (await this.bullionSaleModel
       .find({ customer: customerId })
       .populate('seller', 'fullName role')
-      .lean()
-      .exec()) as any[];
-
-    // جلب فواتير مبيعات الباركود
-    const barcodeInvoices = (await this.barcodeInvoiceModel
-      .find({ customer: customerId })
-      .populate('createdBy', 'fullName role')
       .lean()
       .exec()) as any[];
 
@@ -129,20 +119,9 @@ export class CustomersService {
       date: sale.createdAt,
     }));
 
-    const formattedBarcode = barcodeInvoices.map((bInv) => ({
-      ...bInv,
-      invoiceType: 'BARCODE',
-      displayNumber: bInv.invoiceNumber,
-      displayTotal: bInv.finalPaidAmount || bInv.totalAmount || 0,
-      displayWeight: bInv.totalNetWeight || 0,
-      date: bInv.createdAt,
-    }));
-
-    const allInvoices = [
-      ...formattedStandard,
-      ...formattedBullion,
-      ...formattedBarcode,
-    ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    const allInvoices = [...formattedStandard, ...formattedBullion].sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+    );
 
     const completedStandard = standardInvoices.filter(
       (inv) => inv.status !== 'CANCELLED',
@@ -150,17 +129,10 @@ export class CustomersService {
     const completedBullion = bullionSales.filter(
       (sale) => sale.status !== 'CANCELLED',
     );
-    const completedBarcode = barcodeInvoices.filter(
-      (bInv) => !bInv.isCancelled && bInv.status !== 'CANCELLED',
-    );
 
     const totalSpent =
       completedStandard.reduce((sum, inv) => sum + (inv.totalPrice || 0), 0) +
-      completedBullion.reduce((sum, sale) => sum + (sale.grandTotal || 0), 0) +
-      completedBarcode.reduce(
-        (sum, bInv) => sum + (bInv.finalPaidAmount || bInv.totalAmount || 0),
-        0,
-      );
+      completedBullion.reduce((sum, sale) => sum + (sale.grandTotal || 0), 0);
 
     const totalWeightBought =
       completedStandard.reduce(
@@ -169,10 +141,6 @@ export class CustomersService {
       ) +
       completedBullion.reduce(
         (sum, sale) => sum + (sale.totalGoldWeight || 0),
-        0,
-      ) +
-      completedBarcode.reduce(
-        (sum, bInv) => sum + (bInv.totalNetWeight || 0),
         0,
       );
 
